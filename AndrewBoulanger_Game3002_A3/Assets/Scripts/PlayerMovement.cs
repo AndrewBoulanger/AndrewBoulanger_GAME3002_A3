@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Vector3 resetPosition;
 
+    [SerializeField] private float climbingNormal = 0.75f;
 
     // Start is called before the first frame update
     void Start()
@@ -35,13 +37,14 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        //receives input (also calls jump)
         GetInput();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        handleInput();
+        ApplyHorizontalMovement();
     }
 
     void GetInput()
@@ -50,12 +53,22 @@ public class PlayerMovement : MonoBehaviour
         //jump input
         if (Input.GetKeyDown(KeyCode.Space) && numJumps > 0)
         {
+            Jump();
+        }
+    }
+
+    void Jump()
+    {
+        if (numJumps > 0)
+        {
             numJumps--;
             m_rb.AddForce(Vector3.up * jumpMultiplier, ForceMode.Impulse);
         }
     }
-    void handleInput()
+
+    void ApplyHorizontalMovement()
     {
+        //receiving input
         if (moveInput.x != 0)
         {
             //reduce velocity when changing directions
@@ -64,49 +77,88 @@ public class PlayerMovement : MonoBehaviour
                 m_rb.velocity = new Vector3(m_rb.velocity.x * 0.2f, m_rb.velocity.y, 0.0f);
             }
             
-            if(Mathf.Abs(m_rb.velocity.x) < speedClamp)
+            //only add force when you aren't at max speed
+            if (Mathf.Abs(m_rb.velocity.x) < speedClamp)
+            {
                 m_rb.AddForce(moveInput * accelerationRate, ForceMode.Force);
+                Vector3.ClampMagnitude(m_rb.velocity, speedClamp);
+            }
         }
-        else if(m_rb.velocity.x != 0) //no input, but not stopped
+        //no input, but still moving
+        else if(m_rb.velocity.x != 0)
         {
+            //slow down the character
             m_rb.AddForce(Vector3.right * -m_rb.velocity.x * decelerationRate, ForceMode.Force);
         }
     }
 
     void OnCollisionEnter(Collision other)
     {
-        if (other.contacts[0].normal == Vector3.up)
+        //on flat ground = restore jumps (any surface less than ~40 degrees)
+        if (other.contacts[0].normal.y >= climbingNormal)
         {
             numJumps = 2;
         }
 
+        //with hazards (ie. spikes) = return to respawn point
         if (other.gameObject.CompareTag("Hazard"))
         {
             transform.position = resetPosition;
         }
 
-        if(other.gameObject.CompareTag("Checkpoint"))
+
+        //with thinWall from below = let the player pass through
+        if (other.gameObject.layer == LayerMask.NameToLayer("thinWalls") && other.contacts[0].normal.y < climbingNormal)  
+        { 
+            other.collider.isTrigger = true;
+            m_rb.AddForce(-other.impulse, ForceMode.Impulse);
+        }
+
+    }
+
+    void OnCollisionStay(Collision other)
+    {
+        //if touching a thinWall & pressing down let the player pass through it
+        if (other.gameObject.layer == LayerMask.NameToLayer("thinWalls"))
         {
-            resetPosition = other.transform.position;
+            if (Input.GetAxis("Vertical") < 0)
+            {
+                other.collider.isTrigger = true;
+            }
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
+        //speed up trigger raises max speed
         if (other.gameObject.CompareTag("SpeedUp"))
         {
             speedClamp = fastSpeed;
         }
+        //slowdown trigger lowers max speed
         if (other.gameObject.CompareTag("SlowDown"))
         {
             speedClamp = slowSpeed;
         }
+
+        //with checkpoints = set new respawn point
+        if(other.gameObject.CompareTag("Checkpoint"))
+        {
+            resetPosition = other.transform.position;
+        }
     }
     void OnTriggerExit(Collider other)
     {
+        //leaving speed modifiers = restore max speed to default
         if (other.gameObject.CompareTag("SpeedUp") || other.gameObject.CompareTag("SlowDown") )
         {
             speedClamp = maxSpeed;
+        }
+
+        //passing through a thin wall = restore it's collision
+        if (other.gameObject.layer == LayerMask.NameToLayer("thinWalls"))
+        {
+            other.isTrigger = false;
         }
       
     }
