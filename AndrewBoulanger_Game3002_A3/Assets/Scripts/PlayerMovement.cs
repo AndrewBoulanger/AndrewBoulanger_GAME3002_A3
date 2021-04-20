@@ -18,6 +18,9 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody m_rb = null;
 
+    [SerializeField] private Vector3 resetPosition;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -70,6 +73,18 @@ public class PlayerMovement : MonoBehaviour
         {
             numJumps = 2;
         }
+
+        if (other.gameObject.CompareTag("Hazard"))
+        {
+            transform.position = resetPosition;
+        }
+
+        if(other.gameObject.CompareTag("Checkpoint"))
+        {
+            resetPosition = other.transform.position;
+        }
     }
+
+
 
 }
