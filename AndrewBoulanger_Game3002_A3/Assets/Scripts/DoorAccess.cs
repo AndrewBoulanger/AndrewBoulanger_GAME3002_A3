@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public class DoorAccess : MonoBehaviour
@@ -10,6 +11,8 @@ public class DoorAccess : MonoBehaviour
 
     [SerializeField]
     private Rigidbody door = null;
+
+    [SerializeField] private Image LockedUI;
 // Start is called before the first frame update
     void Start()
     {
@@ -30,8 +33,16 @@ public class DoorAccess : MonoBehaviour
           }
           else
           {
-              print("you dont have the right key");
+              LockedUI.gameObject.SetActive(true);
           }
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (LockedUI.gameObject.activeSelf)
+        {
+            LockedUI.gameObject.SetActive(false);
         }
     }
 }
