@@ -10,6 +10,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float accelerationRate = 35f;
     [SerializeField] private float decelerationRate = 3f;
     [SerializeField] private float maxSpeed = 5f;
+    private float fastSpeed;
+    private float slowSpeed;
+    private float speedClamp;
 
     [SerializeField] private float jumpMultiplier = 4f;
     private int numJumps = 2;
@@ -25,6 +28,9 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         m_rb = GetComponent<Rigidbody>();
+        speedClamp = maxSpeed;
+        fastSpeed = maxSpeed * 1.5f;
+        slowSpeed = maxSpeed * 0.75f;
     }
 
     void Update()
@@ -58,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
                 m_rb.velocity = new Vector3(m_rb.velocity.x * 0.2f, m_rb.velocity.y, 0.0f);
             }
             
-            if(Mathf.Abs(m_rb.velocity.x) < maxSpeed)
+            if(Mathf.Abs(m_rb.velocity.x) < speedClamp)
                 m_rb.AddForce(moveInput * accelerationRate, ForceMode.Force);
         }
         else if(m_rb.velocity.x != 0) //no input, but not stopped
@@ -85,6 +91,24 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("SpeedUp"))
+        {
+            speedClamp = fastSpeed;
+        }
+        if (other.gameObject.CompareTag("SlowDown"))
+        {
+            speedClamp = slowSpeed;
+        }
+    }
+    void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("SpeedUp") || other.gameObject.CompareTag("SlowDown") )
+        {
+            speedClamp = maxSpeed;
+        }
+      
+    }
 
 }
