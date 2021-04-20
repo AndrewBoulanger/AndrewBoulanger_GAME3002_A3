@@ -9,7 +9,7 @@ public enum keyTypes
     Two = 0x2
 }
 
-public class keyCollection : MonoBehaviour
+public class myKeyCollection : MonoBehaviour
 {
 
     private byte keys = 0x0;
@@ -22,5 +22,10 @@ public class keyCollection : MonoBehaviour
 
            print(keys);
         }
+    }
+
+    public byte GetKeys()
+    {
+        return keys;
     }
 }
