@@ -31,8 +31,8 @@ public class PlayerMovement : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         speedClamp = maxSpeed;
-        fastSpeed = maxSpeed * 1.5f;
-        slowSpeed = maxSpeed * 0.75f;
+        fastSpeed = maxSpeed * 2.5f;
+        slowSpeed = maxSpeed * 0.3f;
     }
 
     void Update()
@@ -84,12 +84,6 @@ public class PlayerMovement : MonoBehaviour
                 Vector3.ClampMagnitude(m_rb.velocity, speedClamp);
             }
         }
-        //no input, but still moving
-        else if(m_rb.velocity.x != 0)
-        {
-            //slow down the character
-            m_rb.AddForce(Vector3.right * -m_rb.velocity.x * decelerationRate, ForceMode.Force);
-        }
     }
 
     void OnCollisionEnter(Collision other)
@@ -99,6 +93,8 @@ public class PlayerMovement : MonoBehaviour
         {
             numJumps = 2;
         }
+
+        print(other.impulse);
 
         //with hazards (ie. spikes) = return to respawn point
         if (other.gameObject.CompareTag("Hazard"))

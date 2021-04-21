@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//class that rotates simple objects like the key
 public class rotator : MonoBehaviour
 {
     [SerializeField] private float speed = 5;
@@ -14,13 +15,7 @@ public class rotator : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         m_rb.angularDrag = 0.0f;
-       // m_rb.angularVelocity = axis * speed;
-        m_rb.AddTorque(axis * speed, ForceMode.Force);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
+        m_rb.angularVelocity = axis * speed;
 
     }
 }
