@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         speedClamp = maxSpeed;
-        fastSpeed = maxSpeed * 2.5f;
+        fastSpeed = maxSpeed * 4f;
         slowSpeed = maxSpeed * 0.3f;
     }
 
@@ -94,15 +94,6 @@ public class PlayerMovement : MonoBehaviour
             numJumps = 2;
         }
 
-        print(other.impulse);
-
-        //with hazards (ie. spikes) = return to respawn point
-        if (other.gameObject.CompareTag("Hazard"))
-        {
-            transform.position = resetPosition;
-        }
-
-
         //with thinWall from below = let the player pass through
         if (other.gameObject.layer == LayerMask.NameToLayer("thinWalls") && other.contacts[0].normal.y < climbingNormal)  
         { 
@@ -141,6 +132,12 @@ public class PlayerMovement : MonoBehaviour
         if(other.gameObject.CompareTag("Checkpoint"))
         {
             resetPosition = other.transform.position;
+        }
+
+        //with hazards (ie. spikes) = return to respawn point
+        if (other.gameObject.CompareTag("Hazard"))
+        {
+            transform.position = resetPosition;
         }
     }
     void OnTriggerExit(Collider other)
